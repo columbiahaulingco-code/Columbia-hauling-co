@@ -1,4 +1,4 @@
-name: Improve SEO
+name: Add service SEO pages
 
 on:
   workflow_dispatch:
@@ -10,75 +10,62 @@ permissions:
   contents: write
 
 jobs:
-  seo:
+  service-seo:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Improve local SEO structure
+      - name: Add service pages and sitemap links
         run: |
           python3 <<'PY'
           from pathlib import Path
           from html import escape
-          import re, json
+          import json, re
 
-          domain = 'https://columbiahaulingco.com'
-          phone = '971-336-6379'
-          email = 'columbiahaulingco@gmail.com'
-          locations = [
-            ('Vancouver, WA','junk-removal-vancouver-wa.html'),('Portland, OR','junk-removal-portland-or.html'),
-            ('Camas, WA','junk-removal-camas-wa.html'),('Washougal, WA','junk-removal-washougal-wa.html'),
-            ('Battle Ground, WA','junk-removal-battle-ground-wa.html'),('Ridgefield, WA','junk-removal-ridgefield-wa.html'),
-            ('Salmon Creek, WA','junk-removal-salmon-creek-wa.html'),('Hazel Dell, WA','junk-removal-hazel-dell-wa.html'),
-            ('Orchards, WA','junk-removal-orchards-wa.html'),('Brush Prairie, WA','junk-removal-brush-prairie-wa.html'),
-            ('Felida, WA','junk-removal-felida-wa.html'),('Gresham, OR','junk-removal-gresham-or.html'),
-            ('Beaverton, OR','junk-removal-beaverton-or.html'),('Happy Valley, OR','junk-removal-happy-valley-or.html')
+          domain='https://columbiahaulingco.com'
+          phone='971-336-6379'
+          services=[
+            ('Furniture Removal','furniture-removal.html','couches, mattresses, dressers, tables, chairs, shelves, and bulky furniture'),
+            ('Appliance Removal','appliance-removal.html','washers, dryers, stoves, refrigerators, freezers, and heavy appliances'),
+            ('Garage Cleanouts','garage-cleanouts.html','garage clutter, boxes, shelves, storage junk, and cleanup piles'),
+            ('Rental Cleanouts','rental-cleanouts.html','move-out junk, landlord cleanups, storage unit junk, and apartment cleanouts'),
+            ('Yard Debris Hauling','yard-debris-hauling.html','branches, brush, bagged debris, outdoor junk, and cleanup piles'),
+            ('Construction Debris Hauling','construction-debris-hauling.html','drywall scraps, trim, flooring, cabinets, lumber, and small remodel debris')
           ]
-          services = ['Furniture removal','Garage cleanouts','Appliance removal','Mattress removal','Yard debris hauling','Rental cleanouts','Small construction debris hauling']
+          locations=['Vancouver WA','Portland OR','Camas WA','Washougal WA','Battle Ground WA','Ridgefield WA','Salmon Creek WA','Hazel Dell WA','Orchards WA','Brush Prairie WA','Felida WA']
 
-          index = Path('index.html')
-          html = index.read_text()
-
-          html = re.sub(r'<title>.*?</title>', '<title>Junk Removal Vancouver WA & Portland OR | Columbia Hauling Co.</title>', html, count=1, flags=re.S)
-          html = re.sub(r'<meta name="description" content=".*?">', '<meta name="description" content="Fast junk removal in Vancouver WA, Portland OR, Camas, Washougal, Battle Ground, Ridgefield, Hazel Dell, Salmon Creek, and nearby areas. Text photos for a quote.">', html, count=1, flags=re.S)
-          if 'rel="canonical"' not in html:
-            html = html.replace('<meta name="theme-color" content="#050b12">', '<meta name="theme-color" content="#050b12">\n  <link rel="canonical" href="https://columbiahaulingco.com/">')
-          if 'og:url' not in html:
-            html = html.replace('<meta property="og:type" content="website">', '<meta property="og:type" content="website">\n  <meta property="og:url" content="https://columbiahaulingco.com/">')
-          if 'application/ld+json' not in html:
-            schema = {
-              '@context':'https://schema.org','@type':'LocalBusiness','name':'Columbia Hauling Co.',
-              'url':domain,'telephone':phone,'email':email,
-              'areaServed':[city for city,_ in locations],
-              'serviceType':services,
-              'description':'Local junk removal and hauling company serving Vancouver WA, Portland OR, and nearby areas.'
-            }
-            html = html.replace('</head>', '<script type="application/ld+json">'+json.dumps(schema)+'</script>\n</head>')
-
-          area_html = '<div class="areaList">' + ''.join(f'<a href="/{url}">{escape(city)}</a>' for city,url in locations) + '</div>'
-          html = re.sub(r'<div class="areaList">.*?</div></div></section>', area_html + '</div></section>', html, count=1, flags=re.S)
-          css = '.areaList a{background:#fff;border:1px solid var(--darkline);border-radius:18px;padding:18px;font-weight:950;box-shadow:0 12px 34px rgba(7,24,39,.08);display:block}.card{color:inherit;text-decoration:none}'
+          html=Path('index.html').read_text()
+          service_links='<section class="section tan"><div class="container"><div class="heading"><span class="label">Services</span><h2>Junk removal services people actually search for.</h2><p>Clickable service pages help customers and Google understand what Columbia Hauling Co. does.</p></div><div class="areaList">' + ''.join(f'<a href="/{url}">{escape(name)}</a>' for name,url,_ in services) + '</div></div></section>\n    '
+          if 'Junk removal services people actually search for.' not in html:
+            insert=html.index('<section class="final">')
+            html=html[:insert]+service_links+html[insert:]
           if '.areaList a{' not in html:
-            html = html.replace('</style>', css + '</style>')
-          index.write_text(html)
+            html=html.replace('</style>', '.areaList a{background:#fff;border:1px solid var(--darkline);border-radius:18px;padding:18px;font-weight:950;box-shadow:0 12px 34px rgba(7,24,39,.08);display:block}.card{color:inherit;text-decoration:none}</style>')
+          Path('index.html').write_text(html)
 
-          page_css = 'body{margin:0;font-family:system-ui;color:#102033;line-height:1.55;background:#f4efe4}.wrap{width:min(1050px,calc(100% - 32px));margin:auto}.hero{background:#050b12;color:white;padding:70px 0}a{color:inherit}h1{font-size:clamp(2.7rem,7vw,5.8rem);line-height:.88;letter-spacing:-.07em}.hero p{color:rgba(255,255,255,.76);font-size:1.1rem}p{color:#475569}.btn{display:inline-block;background:#20b15a;color:white;text-decoration:none;padding:14px 20px;border-radius:999px;font-weight:900;margin:8px 8px 0 0}.section{padding:56px 0}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:white;border-radius:22px;padding:22px;border:1px solid rgba(7,24,39,.12);box-shadow:0 14px 44px rgba(7,24,39,.08)}@media(max-width:800px){.grid{grid-template-columns:1fr}}'
-          for city, url in locations:
-            slug = url.replace('.html','')
-            title = f'Junk Removal in {city} | Columbia Hauling Co.'
-            desc = f'Junk removal in {city}. Text photos to Columbia Hauling Co. for furniture removal, cleanouts, appliance removal, yard debris, and hauling.'
-            schema = {'@context':'https://schema.org','@type':'Service','name':f'Junk Removal in {city}','provider':{'@type':'LocalBusiness','name':'Columbia Hauling Co.','telephone':phone},'areaServed':city,'serviceType':services,'url':f'{domain}/{url}'}
-            page = f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{escape(title)}</title><meta name="description" content="{escape(desc)}"><link rel="canonical" href="{domain}/{url}"><meta property="og:title" content="{escape(title)}"><meta property="og:description" content="{escape(desc)}"><meta property="og:url" content="{domain}/{url}"><meta property="og:type" content="website"><style>{page_css}</style><script type="application/ld+json">{json.dumps(schema)}</script></head><body><section class="hero"><div class="wrap"><a href="/">Back to home</a><h1>Junk removal in {escape(city)}.</h1><p>Columbia Hauling Co. helps homeowners, renters, landlords, and small businesses in {escape(city)} clear out junk fast. Text photos for the quickest quote.</p><a class="btn" href="sms:19713366379">Text Photos for Quote</a><a class="btn" href="tel:19713366379">Call {phone}</a></div></section><section class="section"><div class="wrap"><h2>Junk hauling services in {escape(city)}</h2><p>We haul furniture, mattresses, appliances, yard debris, garage junk, storage unit junk, rental cleanouts, and small construction debris.</p><div class="grid"><a class="card" href="/faq.html"><h3>Furniture Removal</h3><p>Couches, mattresses, tables, dressers, chairs, shelves, and bulky items.</p></a><a class="card" href="/faq.html"><h3>Garage & Rental Cleanouts</h3><p>Garage clutter, move-out piles, storage unit junk, and landlord cleanups.</p></a><a class="card" href="/faq.html"><h3>Appliance & Debris Hauling</h3><p>Appliances, yard debris, small remodel debris, and cleanup piles.</p></a></div><a class="btn" href="/">Home</a><a class="btn" href="/faq.html">View FAQs</a></div></section></body></html>'''
+          css='body{margin:0;font-family:system-ui;color:#102033;line-height:1.55;background:#f4efe4}.wrap{width:min(1050px,calc(100% - 32px));margin:auto}.hero{background:#050b12;color:white;padding:70px 0}a{color:inherit}h1{font-size:clamp(2.7rem,7vw,5.8rem);line-height:.88;letter-spacing:-.07em}.hero p{color:rgba(255,255,255,.76);font-size:1.1rem}p{color:#475569}.btn{display:inline-block;background:#20b15a;color:white;text-decoration:none;padding:14px 20px;border-radius:999px;font-weight:900;margin:8px 8px 0 0}.section{padding:56px 0}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:white;border-radius:22px;padding:22px;border:1px solid rgba(7,24,39,.12);box-shadow:0 14px 44px rgba(7,24,39,.08);text-decoration:none}@media(max-width:800px){.grid{grid-template-columns:1fr}}'
+          for name,url,items in services:
+            title=f'{name} in Vancouver WA & Portland OR | Columbia Hauling Co.'
+            desc=f'{name} in Vancouver WA, Portland OR, and nearby areas. Columbia Hauling Co. hauls {items}. Text photos for a quote.'
+            schema={'@context':'https://schema.org','@type':'Service','name':name,'provider':{'@type':'LocalBusiness','name':'Columbia Hauling Co.','telephone':phone},'areaServed':locations,'url':f'{domain}/{url}','description':desc}
+            cards=''.join(f'<div class="card"><h3>{escape(loc)}</h3><p>{escape(name)} available in {escape(loc)} and nearby neighborhoods.</p></div>' for loc in locations[:6])
+            page=f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{escape(title)}</title><meta name="description" content="{escape(desc)}"><link rel="canonical" href="{domain}/{url}"><meta property="og:title" content="{escape(title)}"><meta property="og:description" content="{escape(desc)}"><meta property="og:url" content="{domain}/{url}"><meta property="og:type" content="website"><style>{css}</style><script type="application/ld+json">{json.dumps(schema)}</script></head><body><section class="hero"><div class="wrap"><a href="/">Back to home</a><h1>{escape(name)} in Vancouver WA and Portland OR.</h1><p>Need {escape(name.lower())}? Columbia Hauling Co. hauls {escape(items)}. Text photos and get a clear quote.</p><a class="btn" href="sms:19713366379">Text Photos for Quote</a><a class="btn" href="tel:19713366379">Call {phone}</a></div></section><section class="section"><div class="wrap"><h2>Areas for {escape(name)}</h2><div class="grid">{cards}</div><a class="btn" href="/faq.html">View FAQs</a><a class="btn" href="/">Home</a></div></section></body></html>'
             Path(url).write_text(page)
 
-          urls = ['/', '/faq.html'] + ['/'+url for _,url in locations]
-          sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + ''.join(f'  <url><loc>{domain}{u}</loc></url>\n' for u in urls) + '</urlset>\n'
+          existing=[]
+          if Path('sitemap.xml').exists():
+            existing=re.findall(r'<loc>'+re.escape(domain)+r'([^<]+)</loc>',Path('sitemap.xml').read_text())
+          urls=['/','/faq.html']+existing+[f'/{url}' for _,url,_ in services]
+          seen=[]
+          for u in urls:
+            if u not in seen: seen.append(u)
+          sitemap='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+''.join(f'  <url><loc>{domain}{u}</loc></url>\n' for u in seen)+'</urlset>\n'
           Path('sitemap.xml').write_text(sitemap)
           Path('robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: https://columbiahaulingco.com/sitemap.xml\n')
           PY
-      - name: Commit SEO improvements
+      - name: Commit service SEO pages
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html *.html sitemap.xml robots.txt
-          git commit -m "Improve local SEO structure" || exit 0
+          git commit -m "Add service SEO pages" || exit 0
           git push
