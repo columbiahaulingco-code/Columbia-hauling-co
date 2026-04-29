@@ -1,0 +1,38 @@
+name: Auto Good Homepage Logo Only
+on:
+  push:
+    paths:
+      - '.github/workflows/auto-good-logo-only-now.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make logo file
+        run: base64 -d assets/logo.webp.b64 > assets/logo.webp
+      - name: Use good homepage and swap only CH logo marks
+        run: |
+          cp index-ultra.html index.html
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text()
+          css = '.realLogoMini{width:52px;height:52px;border-radius:14px;background:#fff;object-fit:contain;padding:3px;box-shadow:0 14px 30px rgba(0,0,0,.28);display:block}\n.realLogoMiniFooter{width:52px;height:52px;border-radius:14px;background:#fff;object-fit:contain;padding:3px;box-shadow:0 14px 30px rgba(0,0,0,.28);display:block}\n@media(max-width:650px){.realLogoMini,.realLogoMiniFooter{width:52px;height:52px}.brand span:last-child{display:none}}\n'
+          s = s.replace('</style>', css + '</style>')
+          s = s.replace('<span class="mark"><span>CH</span></span>', '<img class="realLogoMini" src="assets/logo.webp" alt="Columbia Hauling Co. logo">')
+          p.write_text(s)
+          PY
+      - name: Commit actual homepage change
+        run: |
+          git config user.name actions
+          git config user.email actions@github.com
+          git add index.html assets/logo.webp
+          if git diff --cached --quiet; then
+            echo done
+          else
+            git commit -m "Use real logo on good homepage only"
+            git push
+          fi
