@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Replace FAQ section
+      - name: Shorten homepage FAQ
         run: |
           python3 <<'PY'
           from pathlib import Path
@@ -26,42 +26,29 @@ jobs:
           end = html.index('<section class="final">', start)
 
           qa = [
-            ('How much do you charge for junk removal?', 'Pricing depends on load size, weight, labor, access, and disposal costs. Text photos to 971-336-6379 for the fastest real quote.'),
-            ('Do you charge by truckload, item, weight, or time?', 'Most jobs are priced by load size, weight, labor, access, and disposal costs. Single item pickups can usually be priced from photos.'),
-            ('Is there a minimum fee?', 'Yes. Small pickups still have travel, loading, fuel, and disposal costs, so there is usually a minimum charge.'),
-            ('Can you give me a quote from photos?', 'Yes. Send 2 to 4 clear photos, your city, where the junk is located, access details, and when you want it picked up.'),
-            ('Are dump fees included?', 'Most quotes include disposal costs. If something has unusual disposal fees, we explain that before scheduling.'),
-            ('Do you charge extra for stairs, heavy items, or long carry distance?', 'Sometimes. Stairs, tight access, long walks from the truck, and heavy items can add labor.'),
-            ('What items do you take?', 'We can usually haul couches, mattresses, dressers, tables, chairs, shelves, appliances, yard debris, garage junk, rental cleanouts, and small construction debris.'),
-            ('Do you take refrigerators, freezers, or exercise equipment?', 'Usually yes. Send photos first because heavy appliances and gym equipment may require extra handling depending on size and access.'),
-            ('Do you clean out garages, storage units, apartments, or rentals?', 'Yes. We handle garage cleanouts, storage unit cleanouts, apartment move-outs, landlord cleanups, and rental property junk removal.'),
-            ('Do you do single item pickup?', 'Yes. Single item pickups are good for couches, mattresses, appliances, furniture, and other bulky items.'),
-            ('What items do you not take?', 'Some items may not be accepted or may need special disposal, including chemicals, paint, fuel, oil, certain batteries, asbestos, food waste, moldy items, and items with bugs.'),
-            ('Do you take concrete, dirt, rocks, bricks, or heavy construction material?', 'Sometimes, but heavy material is priced differently and may not be accepted depending on quantity. Send photos first.'),
-            ('How soon can you come?', 'It depends on schedule and location. Text photos and your city and we will give the soonest available pickup options.'),
-            ('Do you offer same-day or next-day pickup?', 'Sometimes. Same-day and next-day pickup depend on route availability, job size, dump hours, and how fast you approve the quote.'),
-            ('What areas do you service?', 'We serve Vancouver WA, Portland OR, Camas, Washougal, Battle Ground, and nearby areas. Text your address or nearest area to confirm.'),
-            ('Do I need to be home?', 'Usually yes for approval and payment, but some outside pickups can be done with clear photos, instructions, and payment arranged ahead of time.'),
-            ('Can you work around my schedule?', 'We try to. Send your preferred pickup time and we will tell you what is available.'),
-            ('Do I need to move everything outside?', 'No, not always. We can remove items from inside, garages, storage units, upstairs areas, and outside piles. Access can affect price.'),
-            ('Do you load everything, or do I need to help?', 'We do the loading. You do not need to help unless you want to move small items ahead of time to make the job faster.'),
-            ('Can you remove items from inside the house?', 'Yes. We can remove items from inside as long as access is safe and clear. Stairs and tight spaces can affect pricing.'),
-            ('Do you sweep up after?', 'Yes, we clean up the work area after loading. We are not a deep cleaning service, but we do not leave the area looking worse.'),
-            ('How long will it take?', 'Small pickups can be quick. Larger cleanouts take longer depending on load size, stairs, distance from the truck, and sorting needs.'),
-            ('Do you recycle or donate usable items?', 'When possible, usable items may be donated or recycled instead of dumped. Some items still have to go to the proper disposal facility.'),
-            ('Where does the junk go?', 'Junk goes to the proper disposal, recycling, or donation location depending on what it is and what condition it is in.'),
-            ('Do you send a price before starting?', 'Yes. We give a quote or price range before starting. Final price can change if the load is bigger, heavier, or harder to access than described.'),
-            ('Do you accept cash, card, Venmo, Zelle, or check?', 'Payment options can vary by job. Ask when you book and we will confirm what payment methods are available.'),
+            ('How much does junk removal cost?', 'Pricing depends on load size, weight, labor, access, and disposal costs. Text photos to 971-336-6379 for the fastest quote.'),
+            ('Can you give me a quote from photos?', 'Yes. Send a few clear photos, your city, where the junk is located, and when you want it picked up.'),
+            ('What items do you take?', 'We usually haul furniture, mattresses, appliances, yard debris, garage junk, rental cleanouts, and small construction debris.'),
+            ('What items do you not take?', 'Some items may not be accepted, including chemicals, paint, fuel, oil, asbestos, food waste, moldy items, and items with bugs.'),
+            ('Do you offer same-day pickup?', 'Sometimes. It depends on route availability, job size, dump hours, and how fast you approve the quote.'),
+            ('Do I need to move everything outside?', 'No. We can remove items from inside, garages, upstairs areas, and outside piles. Access can affect price.'),
+            ('Do you load everything?', 'Yes. We do the loading. You do not need to help.'),
+            ('What areas do you service?', 'We serve Vancouver WA, Portland OR, Camas, Washougal, Battle Ground, and nearby areas.'),
           ]
+          items = ''.join(f'<details class="faq"><summary>{escape(q)}</summary><p>{escape(a)}</p></details>' for q, a in qa)
+          new = '<section class="section"><div class="container"><div class="heading"><span class="label">FAQ</span><h2>Quick answers before you book.</h2><p>No giant wall of questions. Here are the ones people actually care about first.</p></div><div class="faqList">' + items + '</div><div class="actions" style="margin-top:24px"><a class="btn darkBtn" href="/faq.html">View All FAQs</a><a class="btn primary" href="sms:19713366379">Text Photos for Quote</a></div></div></section>\n    '
+          path.write_text(html[:start] + new + html[end:])
 
-          faq_items = ''.join(f'<details class="faq"><summary>{escape(q)}</summary><p>{escape(a)}</p></details>' for q, a in qa)
-          faq = '<section class="section"><div class="container"><div class="heading"><span class="label">FAQ</span><h2>Junk removal questions people ask before booking.</h2><p>Clear answers about pricing, what we take, scheduling, access, payment, and how pickup works.</p></div><div class="faqList">' + faq_items + '</div></div></section>\n    '
-          path.write_text(html[:start] + faq + html[end:])
+          full = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Junk Removal FAQ | Columbia Hauling Co.</title><meta name="description" content="Common junk removal questions for Columbia Hauling Co."><style>body{font-family:system-ui;margin:0;color:#102033;background:#f4efe4;line-height:1.55}.wrap{width:min(950px,calc(100% - 32px));margin:auto;padding:48px 0}.top{background:#050b12;color:white;padding:28px 0}.top a{color:#a7f3c4}h1{font-size:clamp(2.4rem,7vw,5rem);line-height:.9;letter-spacing:-.06em}.card{background:white;border:1px solid rgba(7,24,39,.12);border-radius:22px;padding:18px 22px;margin:12px 0;box-shadow:0 14px 44px rgba(7,24,39,.08)}summary{font-weight:900;cursor:pointer}p{color:#475569}.btn{display:inline-block;background:#20b15a;color:white;padding:14px 20px;border-radius:999px;text-decoration:none;font-weight:900;margin-top:18px}</style></head><body><div class="top"><div class="wrap"><a href="/">Back to home</a><h1>Junk Removal FAQ</h1><p>Full answers about pricing, pickup, items, scheduling, and disposal.</p><a class="btn" href="sms:19713366379">Text Photos for Quote</a></div></div><main class="wrap">'
+          for q,a in qa:
+              full += f'<details class="card"><summary>{escape(q)}</summary><p>{escape(a)}</p></details>'
+          full += '<details class="card"><summary>Do you recycle or donate usable items?</summary><p>When possible, usable items may be donated or recycled instead of dumped.</p></details><details class="card"><summary>Where does the junk go?</summary><p>Junk goes to the proper disposal, recycling, or donation location depending on what it is.</p></details><details class="card"><summary>Do you accept cash, card, Venmo, Zelle, or check?</summary><p>Payment options can vary by job. Ask when you book and we will confirm.</p></details></main></body></html>'
+          Path('faq.html').write_text(full)
           PY
-      - name: Commit FAQ update
+      - name: Commit FAQ layout update
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git commit -m "Expand junk removal FAQ" || exit 0
+          git add index.html faq.html
+          git commit -m "Shorten homepage FAQ and add FAQ page" || exit 0
           git push
