@@ -18,42 +18,44 @@ jobs:
         run: |
           python3 <<'PY'
           from pathlib import Path
+          from html import escape
+
           path = Path('index.html')
           html = path.read_text()
           start = html.index('<section class="section"><div class="container"><div class="heading"><span class="label">FAQ</span>')
           end = html.index('<section class="final">', start)
-          faq = '''<section class="section"><div class="container"><div class="heading"><span class="label">FAQ</span><h2>Junk removal questions people ask before booking.</h2><p>Clear answers about pricing, what we take, scheduling, access, payment, and how pickup works.</p></div><div class="faqList">
-<details class="faq"><summary>How much do you charge for junk removal?</summary><p>Pricing depends on load size, weight, labor, access, and disposal costs. Text photos to 971-336-6379 for the fastest real quote.</p></details>
-<details class="faq"><summary>Do you charge by truckload, item, weight, or time?</summary><p>Most jobs are priced by load size, weight, labor, access, and disposal costs. Single item pickups can usually be priced from photos.</p></details>
-<details class="faq"><summary>Is there a minimum fee?</summary><p>Yes. Small pickups still have travel, loading, fuel, and disposal costs, so there is usually a minimum charge.</p></details>
-<details class="faq"><summary>Can you give me a quote from photos?</summary><p>Yes. Send 2 to 4 clear photos, your city, where the junk is located, access details, and when you want it picked up.</p></details>
-<details class="faq"><summary>Are dump fees included?</summary><p>Most quotes include disposal costs. If something has unusual disposal fees, we explain that before scheduling.</p></details>
-<details class="faq"><summary>Do you charge extra for stairs, heavy items, or long carry distance?</summary><p>Sometimes. Stairs, tight access, long walks from the truck, and heavy items can add labor.</p></details>
-<details class="faq"><summary>Do you take couches, mattresses, appliances, and furniture?</summary><p>Yes. We can usually haul couches, mattresses, dressers, tables, chairs, shelves, appliances, and other bulky furniture.</p></details>
-<details class="faq"><summary>Do you take refrigerators or freezers?</summary><p>Usually yes. Send photos first because heavy appliances may require extra handling depending on size and access.</p></details>
-<details class="faq"><summary>Do you remove old exercise equipment?</summary><p>Yes, depending on size and weight. Treadmills, bikes, benches, weights, and gym equipment may require extra labor if heavy or upstairs.</p></details>
-<details class="faq"><summary>Do you clean out garages, storage units, apartments, or rentals?</summary><p>Yes. We handle garage cleanouts, storage unit cleanouts, apartment move-outs, landlord cleanups, and rental property junk removal.</p></details>
-<details class="faq"><summary>Do you do single item pickup?</summary><p>Yes. Single item pickups are good for couches, mattresses, appliances, furniture, and other bulky items.</p></details>
-<details class="faq"><summary>Do you take yard waste or construction debris?</summary><p>Yes, we can usually haul yard debris and small construction debris like drywall scraps, trim, flooring, cabinets, lumber, and cleanup piles.</p></details>
-<details class="faq"><summary>Do you take paint, chemicals, gas, oil, batteries, asbestos, or hazardous materials?</summary><p>Usually no. Hazardous materials and regulated items may require special disposal and may not be accepted.</p></details>
-<details class="faq"><summary>Do you take concrete, dirt, rocks, bricks, or heavy construction material?</summary><p>Sometimes, but heavy material is priced differently and may not be accepted depending on quantity. Send photos first.</p></details>
-<details class="faq"><summary>Do you take food waste, moldy items, or items with bugs?</summary><p>Usually no, or it may require special handling. Tell us before booking if anything has bugs, mold, rotten food, or strong odors.</p></details>
-<details class="faq"><summary>How soon can you come?</summary><p>It depends on schedule and location. Text photos and your city and we will give the soonest available pickup options.</p></details>
-<details class="faq"><summary>Do you offer same-day or next-day pickup?</summary><p>Sometimes. Same-day and next-day pickup depend on route availability, job size, dump hours, and how fast you approve the quote.</p></details>
-<details class="faq"><summary>What areas do you service?</summary><p>We serve Vancouver WA, Portland OR, Camas, Washougal, Battle Ground, and nearby areas. Text your address or nearest area to confirm.</p></details>
-<details class="faq"><summary>Do I need to be home?</summary><p>Usually yes for approval and payment, but some outside pickups can be done with clear photos, instructions, and payment arranged ahead of time.</p></details>
-<details class="faq"><summary>Can you work around my schedule?</summary><p>We try to. Send your preferred pickup time and we will tell you what is available.</p></details>
-<details class="faq"><summary>Do I need to move everything outside?</summary><p>No, not always. We can remove items from inside, garages, storage units, upstairs areas, and outside piles. Access can affect price.</p></details>
-<details class="faq"><summary>Do you load everything, or do I need to help?</summary><p>We do the loading. You do not need to help unless you want to move small items ahead of time to make the job faster.</p></details>
-<details class="faq"><summary>Can you remove items from inside the house?</summary><p>Yes. We can remove items from inside as long as access is safe and clear. Stairs and tight spaces can affect pricing.</p></details>
-<details class="faq"><summary>Do you sweep up after?</summary><p>Yes, we clean up the work area after loading. We are not a deep cleaning service, but we do not leave the area looking worse.</p></details>
-<details class="faq"><summary>How long will it take?</summary><p>Small pickups can be quick. Larger cleanouts take longer depending on load size, stairs, distance from the truck, and sorting needs.</p></details>
-<details class="faq"><summary>Do you recycle or donate usable items?</summary><p>When possible, usable items may be donated or recycled instead of dumped. Some items still have to go to the proper disposal facility.</p></details>
-<details class="faq"><summary>Where does the junk go?</summary><p>Junk goes to the proper disposal, recycling, or donation location depending on what it is and what condition it is in.</p></details>
-<details class="faq"><summary>Do you send a price before starting?</summary><p>Yes. We give a quote or price range before starting. Final price can change if the load is bigger, heavier, or harder to access than described.</p></details>
-<details class="faq"><summary>Do you accept cash, card, Venmo, Zelle, or check?</summary><p>Payment options can vary by job. Ask when you book and we will confirm what payment methods are available.</p></details>
-</div></div></section>
-    '''
+
+          qa = [
+            ('How much do you charge for junk removal?', 'Pricing depends on load size, weight, labor, access, and disposal costs. Text photos to 971-336-6379 for the fastest real quote.'),
+            ('Do you charge by truckload, item, weight, or time?', 'Most jobs are priced by load size, weight, labor, access, and disposal costs. Single item pickups can usually be priced from photos.'),
+            ('Is there a minimum fee?', 'Yes. Small pickups still have travel, loading, fuel, and disposal costs, so there is usually a minimum charge.'),
+            ('Can you give me a quote from photos?', 'Yes. Send 2 to 4 clear photos, your city, where the junk is located, access details, and when you want it picked up.'),
+            ('Are dump fees included?', 'Most quotes include disposal costs. If something has unusual disposal fees, we explain that before scheduling.'),
+            ('Do you charge extra for stairs, heavy items, or long carry distance?', 'Sometimes. Stairs, tight access, long walks from the truck, and heavy items can add labor.'),
+            ('What items do you take?', 'We can usually haul couches, mattresses, dressers, tables, chairs, shelves, appliances, yard debris, garage junk, rental cleanouts, and small construction debris.'),
+            ('Do you take refrigerators, freezers, or exercise equipment?', 'Usually yes. Send photos first because heavy appliances and gym equipment may require extra handling depending on size and access.'),
+            ('Do you clean out garages, storage units, apartments, or rentals?', 'Yes. We handle garage cleanouts, storage unit cleanouts, apartment move-outs, landlord cleanups, and rental property junk removal.'),
+            ('Do you do single item pickup?', 'Yes. Single item pickups are good for couches, mattresses, appliances, furniture, and other bulky items.'),
+            ('What items do you not take?', 'Some items may not be accepted or may need special disposal, including chemicals, paint, fuel, oil, certain batteries, asbestos, food waste, moldy items, and items with bugs.'),
+            ('Do you take concrete, dirt, rocks, bricks, or heavy construction material?', 'Sometimes, but heavy material is priced differently and may not be accepted depending on quantity. Send photos first.'),
+            ('How soon can you come?', 'It depends on schedule and location. Text photos and your city and we will give the soonest available pickup options.'),
+            ('Do you offer same-day or next-day pickup?', 'Sometimes. Same-day and next-day pickup depend on route availability, job size, dump hours, and how fast you approve the quote.'),
+            ('What areas do you service?', 'We serve Vancouver WA, Portland OR, Camas, Washougal, Battle Ground, and nearby areas. Text your address or nearest area to confirm.'),
+            ('Do I need to be home?', 'Usually yes for approval and payment, but some outside pickups can be done with clear photos, instructions, and payment arranged ahead of time.'),
+            ('Can you work around my schedule?', 'We try to. Send your preferred pickup time and we will tell you what is available.'),
+            ('Do I need to move everything outside?', 'No, not always. We can remove items from inside, garages, storage units, upstairs areas, and outside piles. Access can affect price.'),
+            ('Do you load everything, or do I need to help?', 'We do the loading. You do not need to help unless you want to move small items ahead of time to make the job faster.'),
+            ('Can you remove items from inside the house?', 'Yes. We can remove items from inside as long as access is safe and clear. Stairs and tight spaces can affect pricing.'),
+            ('Do you sweep up after?', 'Yes, we clean up the work area after loading. We are not a deep cleaning service, but we do not leave the area looking worse.'),
+            ('How long will it take?', 'Small pickups can be quick. Larger cleanouts take longer depending on load size, stairs, distance from the truck, and sorting needs.'),
+            ('Do you recycle or donate usable items?', 'When possible, usable items may be donated or recycled instead of dumped. Some items still have to go to the proper disposal facility.'),
+            ('Where does the junk go?', 'Junk goes to the proper disposal, recycling, or donation location depending on what it is and what condition it is in.'),
+            ('Do you send a price before starting?', 'Yes. We give a quote or price range before starting. Final price can change if the load is bigger, heavier, or harder to access than described.'),
+            ('Do you accept cash, card, Venmo, Zelle, or check?', 'Payment options can vary by job. Ask when you book and we will confirm what payment methods are available.'),
+          ]
+
+          faq_items = ''.join(f'<details class="faq"><summary>{escape(q)}</summary><p>{escape(a)}</p></details>' for q, a in qa)
+          faq = '<section class="section"><div class="container"><div class="heading"><span class="label">FAQ</span><h2>Junk removal questions people ask before booking.</h2><p>Clear answers about pricing, what we take, scheduling, access, payment, and how pickup works.</p></div><div class="faqList">' + faq_items + '</div></div></section>\n    '
           path.write_text(html[:start] + faq + html[end:])
           PY
       - name: Commit FAQ update
