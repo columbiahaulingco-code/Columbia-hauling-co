@@ -1,0 +1,69 @@
+name: Apply Liked Version With Real Logo
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'index-brand-final.html'
+      - 'assets/logo.webp.b64'
+      - '.github/workflows/apply-liked-version-with-logo.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Decode real logo asset
+        run: base64 -d assets/logo.webp.b64 > assets/logo.webp
+
+      - name: Start from the liked design
+        run: cp index-brand-final.html index.html
+
+      - name: Add real logo to liked design only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          html = p.read_text()
+
+          extra_css = r'''
+          .realLogoMini{width:64px;height:64px;object-fit:contain;background:#fff;border-radius:16px;padding:4px;box-shadow:0 14px 32px rgba(0,0,0,.25)}
+          .logoFrame{height:420px;border-radius:28px;background:#fffaf3;display:grid;place-items:center;overflow:hidden;border:1px solid rgba(6,17,29,.1);padding:24px}
+          .heroLogoReal{width:100%;height:100%;object-fit:contain;display:block}
+          .ownerLogoReal{width:90px;height:90px;border-radius:22px;object-fit:contain;background:#fff;border:1px solid rgba(16,32,51,.13);padding:6px;box-shadow:0 14px 44px rgba(6,17,29,.08)}
+          @media(max-width:930px){.logoFrame{height:360px}}
+          @media(max-width:650px){.realLogoMini{width:54px;height:54px}.logoFrame{height:310px;padding:14px}.brand span:last-child{display:inline}}
+          '''
+          html = html.replace('</style>', extra_css + '\n</style>')
+
+          old_mark = '<span class="miniMark"><span>CH</span></span>'
+          new_mark = '<img class="realLogoMini" src="assets/logo.webp" alt="Columbia Hauling Co. logo">'
+          html = html.replace(old_mark, new_mark)
+
+          start = html.find('<div class="logoStage"><div class="fakeLogo">')
+          msg = html.find('<div class="messageCard">', start)
+          if start != -1 and msg != -1:
+              html = html[:start] + '<div class="logoStage"><div class="logoFrame"><img class="heroLogoReal" src="assets/logo.webp" alt="Columbia Hauling Co. logo"></div>' + html[msg:]
+
+          html = html.replace('<div class="ownerBadge">CH</div>', '<img class="ownerLogoReal" src="assets/logo.webp" alt="Columbia Hauling Co. logo">')
+
+          html = html.replace('Replace this CSS logo with your clean transparent PNG/SVG later for even sharper quality.', 'Real Columbia Hauling Co. logo added.')
+          p.write_text(html)
+          PY
+
+      - name: Commit homepage and logo update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/logo.webp
+          if git diff --cached --quiet; then
+            echo "No homepage changes to commit."
+          else
+            git commit -m "Apply liked homepage with real logo"
+            git push
+          fi
