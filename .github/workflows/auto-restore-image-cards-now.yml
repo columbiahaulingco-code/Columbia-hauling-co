@@ -1,0 +1,29 @@
+name: Auto Restore Original Image Cards
+
+on:
+  push:
+    paths:
+      - '.github/workflows/auto-restore-image-cards-now.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Put original image-card homepage back
+        run: cp index-ultra.html index.html
+      - name: Commit homepage restore
+        run: |
+          git config user.name "actions"
+          git config user.email "actions@github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Already restored"
+          else
+            git commit -m "Restore original service image cards"
+            git push
+          fi
