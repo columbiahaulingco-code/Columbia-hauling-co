@@ -1,0 +1,33 @@
+name: Apply Brand Final Homepage
+
+on:
+  push:
+    paths:
+      - 'index-brand-final.html'
+      - '.github/workflows/apply-brand-final.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Replace homepage with final branded version
+        run: cp index-brand-final.html index.html
+
+      - name: Commit homepage update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No homepage changes to commit."
+          else
+            git commit -m "Apply final branded homepage"
+            git push
+          fi
